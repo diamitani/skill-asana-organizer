@@ -337,6 +337,81 @@ Use these patterns as a starting point:
 
 ---
 
+## Connectors
+
+The skill ships with a **multi-tool connector layer** and an **MCP server** so
+the same organizer workflow runs against Asana, ClickUp, Monday.com, Trello,
+Notion, or Jira — not just Asana.
+
+### Connector layer (bash)
+
+`./scripts/connectors.sh` re-sources `./scripts/asana-api.sh` and adds
+identical helpers for the other five tools:
+
+```bash
+source ./scripts/connectors.sh
+
+# URL → tool name (works for any of the 6 providers)
+detect_tool_from_url "https://app.clickup.com/123/v/li/456"   # → clickup
+detect_tool_from_url "https://diamitani.monday.com/boards/9"  # → monday
+detect_tool_from_url "https://trello.com/b/abc/my-board"      # → trello
+detect_tool_from_url "https://www.notion.so/abc..."            # → notion
+detect_tool_from_url "https://co.atlassian.net/browse/ENG-1" # → jira
+
+# Normalized fetch — returns {tool, project_id, project_name, sections, tasks}
+connect_asana_fetch_project   "https://app.asana.com/0/123/list"
+connect_clickup_fetch_project "https://app.clickup.com/.../li/456"
+connect_monday_fetch_project  "https://diamitani.monday.com/boards/9"
+connect_trello_fetch_project  "https://trello.com/b/abc/my-board"
+connect_notion_fetch_project  "https://www.notion.so/..."
+connect_jira_fetch_project    "ENG"
+
+# Normalized apply — same JSON shape for every tool
+connect_<tool>_apply_changes <project_id> '{"rewrites":[…],"create_sections":[…],"moves":[…]}'
+
+# Low-level HTTP wrappers (curl under the hood)
+<tool>_get / <tool>_post / <tool>_put / <tool>_delete
+```
+
+**Required env vars per provider:**
+
+| Provider  | Env vars                                                       |
+|-----------|----------------------------------------------------------------|
+| Asana     | `ASANA_PAT`                                                    |
+| ClickUp   | `CLICKUP_API_TOKEN`                                            |
+| Monday    | `MONDAY_API_TOKEN`                                             |
+| Trello    | `TRELLO_API_KEY` + `TRELLO_API_TOKEN`                          |
+| Notion    | `NOTION_API_KEY`                                               |
+| Jira      | `JIRA_BASE_URL` + `JIRA_EMAIL` + `JIRA_API_TOKEN`              |
+
+With any of these set, the skill auto-detects the tool from the URL the
+user pastes — say *"organize my ClickUp project at https://..."* and the
+skill runs the same Steps 1-9 against ClickUp's API instead of Asana.
+
+Verify setup at any time:
+
+```bash
+bash scripts/setup.sh --check
+```
+
+### MCP server (stdio JSON-RPC)
+
+`./mcp/server.py` is a real MCP server you can add to Claude Desktop,
+Cursor, or VS Code Continue. It exposes:
+
+- `fetch_project(tool, project_url_or_id)` → normalized JSON
+- `apply_rewrites(tool, project_id, rewrites)` → apply task renames/notes
+- `create_sections(tool, project_id, sections)` → create sections
+- `move_tasks(tool, moves)` → move tasks to new sections
+- `get_health()` → server health + which tools have credentials
+
+Wire-up examples for Claude Desktop, Cursor, and VS Code Continue are in
+[`./mcp/README.md`](./mcp/README.md). The server uses the official
+`mcp` Python SDK when available and falls back to a manual JSON-RPC loop
+on Python 3.9, so it works on any modern Python install.
+
+---
+
 ## Rules
 
 - Always source `asana-api.sh` at the start of every bash block
@@ -346,101 +421,6 @@ Use these patterns as a starting point:
 - Apply rewrites one batch at a time, confirm success before continuing
 - If an API call fails (non-200), log the error and continue with remaining tasks
 - Never expose the PAT in output shown to stakeholders
-
----
-
-## Connectors (Multi-Tool)
-
-The skill supports **Asana, ClickUp, Monday, Trello, Notion, and Jira** through a unified bash connector layer.
-
-### Setup per tool
-
-Set the appropriate env var, then source the connectors:
-
-```bash
-# Asana
-export ASANA_PAT='2/your-token-here'
-source ./scripts/connectors.sh
-connect_asana_ping
-
-# ClickUp
-export CLICKUP_API_TOKEN='pk_...'
-source ./scripts/connectors.sh
-connect_clickup_ping
-
-# Monday
-export MONDAY_API_TOKEN='ey...'
-source ./scripts/connectors.sh
-connect_monday_ping
-
-# Trello
-export TRELLO_API_KEY='...'
-export TRELLO_API_TOKEN='...'
-source ./scripts/connectors.sh
-connect_trello_ping
-
-# Notion
-export NOTION_API_KEY='secret_...'
-source ./scripts/connectors.sh
-connect_notion_ping
-
-# Jira
-export JIRA_BASE_URL='https://yourcompany.atlassian.net'
-export JIRA_EMAIL='you@yourcompany.com'
-export JIRA_API_TOKEN='...'
-source ./scripts/connectors.sh
-connect_jira_ping
-```
-
-### Auto-detect from URL
-
-The skill auto-detects the tool from the project URL pattern. Just say:
-
-> "Organize my project at https://app.asana.com/0/123/list"
-> "Clean up my ClickUp board at https://app.clickup.com/123"
-> "Tidy my Monday project at https://yourteam.monday.com/boards/123"
-
-`detect_tool_from_url "URL"` returns the tool name, then the skill uses the matching `connect_<tool>_fetch_project` and `connect_<tool>_apply_changes` functions.
-
-### Normalized interface
-
-All tools return the same JSON shape:
-
-```json
-{
-  "tool": "asana",
-  "project_id": "1234567890",
-  "project_name": "Q2 Product Roadmap",
-  "sections": [{"id": "sec_1", "name": "In Progress"}],
-  "tasks": [
-    {
-      "id": "task_1",
-      "name": "Old task name",
-      "notes": "Old description",
-      "section_id": "sec_1",
-      "assignee": "user@example.com",
-      "due_date": "2026-04-30",
-      "completed": false
-    }
-  ]
-}
-```
-
-This means the rewrite logic (Steps 4-9) works identically regardless of source tool.
-
----
-
-## MCP Server
-
-A stdio MCP server is included at `./mcp/server.py`. It exposes the same multi-tool operations as standard MCP tools. See [mcp/README.md](mcp/README.md) for setup with Claude Desktop, Cursor, and VS Code.
-
-Quick test:
-```bash
-bash ./scripts/setup.sh        # verify everything works
-python3 ./mcp/server.py < /dev/null  # boot test
-```
-
-Available MCP tools: `fetch_project`, `apply_rewrites`, `create_sections`, `move_tasks`, `get_health`.
 
 ---
 

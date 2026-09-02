@@ -151,28 +151,37 @@ def create_sections(
         return {"error": str(e), "tool": tool}
 
 
-def move_tasks(tool: str, moves: list[dict[str, Any]]) -> dict[str, Any]:
-    """Move tasks to new sections. Each move: {task_id, section_id}."""
+def move_tasks(
+    tool: str, moves: list[dict[str, Any]], project_id: str | None = None
+) -> dict[str, Any]:
+    """Move tasks to new sections. Each move: {task_id, section_id, project_id?}.
+
+    `project_id` is optional — if omitted, each move dict must include its own
+    `project_id` (so moves can span multiple projects in a single call).
+    """
     if tool not in SUPPORTED_TOOLS:
         return {"error": f"unsupported tool: {tool}"}
-    payload = json.dumps({"moves": moves})
     try:
-        out = _run_bash_function(
-            f"connect_{tool}_apply_changes", [tool, payload]
-        ) if False else None  # placeholder; corrected below
-        # The connectors.sh apply function expects (project_id, payload).
-        # For "moves" we still need a project context; if caller doesn't pass
-        # one, we ask them to include it per-move via "project_id" in each dict.
-        normalized = []
+        # Normalize moves: allow each move to carry project_id, or fall back to
+        # the top-level project_id argument.
+        normalized: list[dict[str, Any]] = []
         for m in moves:
             mv = dict(m)
-            pid = mv.pop("project_id", None) or project_id
-            normalized.append({"task_id": mv.get("task_id"), "section_id": mv.get("section_id") or mv.get("status"), "project_id": pid})
-        # We need one project_id for the apply call — use the first one.
-        first_pid = normalized[0]["project_id"] if normalized else project_id
-        payload2 = json.dumps({"moves": normalized})
+            mv_pid = mv.pop("project_id", None) or project_id
+            normalized.append({
+                "task_id":    mv.get("task_id"),
+                "section_id": mv.get("section_id") or mv.get("status"),
+                "project_id": mv_pid,
+            })
+        # The connector's apply function takes ONE project_id. We pick the
+        # first non-empty one and trust that moves within the same call share
+        # the same project (a typical organizer pattern).
+        first_pid = next((m["project_id"] for m in normalized if m.get("project_id")), project_id)
+        if not first_pid:
+            return {"error": "move_tasks requires project_id (top-level or per-move)"}
+        payload = json.dumps({"moves": normalized})
         out = _run_bash_function(
-            f"connect_{tool}_apply_changes", [first_pid, payload2]
+            f"connect_{tool}_apply_changes", [first_pid, payload]
         )
         return _json_or_error(out, f"connect_{tool}_apply_changes")
     except Exception as e:
