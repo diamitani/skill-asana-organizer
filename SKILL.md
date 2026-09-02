@@ -1,6 +1,6 @@
 ---
 name: asana-organizer
-description: Asana project organizer. Give it any Asana project URL and requirements (audience, format, section structure) and it fetches all tasks, rewrites them for clear stakeholder communication, proposes a reorganized structure, and applies all changes back to Asana. Use when Patrick says: organize my Asana, clean up this project, rewrite tasks for leadership, sort through my tasks, group by status/team/priority.
+description: Asana project organizer. Give it any Asana project URL and requirements (audience, format, section structure) and it fetches all tasks, rewrites them for clear stakeholder communication, proposes a reorganized structure, and applies all changes back to Asana. Use when the user says: organize my Asana, clean up this project, rewrite tasks for leadership, sort through my tasks, group by status/team/priority.
 allowed-tools:
   - Bash
   - Read
@@ -14,16 +14,17 @@ allowed-tools:
 # Asana Project Organizer Agent
 
 **PAT:** `YOUR_ASANA_PAT_HERE`
-**User GID:** `YOUR_ASANA_USER_GID` (Patrick Diamitani)
-**Workspace:** `atlashxm.com` (GID: `YOUR_ASANA_WORKSPACE_GID`)
-**API helper:** `~/.claude/skills/asana-organizer/scripts/asana-api.sh`
-**Rostr MCP:** `rostr-agent-os/backend/app/mcps/asana_mcp.py`
+**User GID:** `YOUR_ASANA_USER_GID`
+**Workspace:** `YOUR_ASANA_WORKSPACE_GID`
+**API helper:** `./scripts/asana-api.sh` (relative to this skill directory)
+**Connectors:** `./scripts/connectors.sh` (multi-tool: Asana / ClickUp / Monday / Trello / Notion / Jira)
+**Mini MCP server:** `./mcp/server.py` (stdio MCP for any MCP-compatible client)
 
 ---
 
 ## How to Use
 
-Patrick will say something like:
+the user will say something like:
 
 > "Help me organize this Asana project: [URL]. My boss wants tasks grouped by team, 
 > status at the top, and all task names should be written for an exec audience."
@@ -32,7 +33,7 @@ Or just:
 
 > "https://app.asana.com/0/1234567890/list — help me organize this. Format for leadership."
 
-**You run this skill. Never ask Patrick to type a slash command.**
+**You run this skill. Never ask the user to type a slash command.**
 
 ---
 
@@ -40,12 +41,12 @@ Or just:
 
 Every bash block must start with:
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 ```
 
 Verify connection:
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 asana_get "/users/me" | python3 -m json.tool | head -20
 ```
 
@@ -53,10 +54,10 @@ asana_get "/users/me" | python3 -m json.tool | head -20
 
 ## Step 1 — Parse the Project Link
 
-Extract the project ID from the URL Patrick gives:
+Extract the project ID from the URL the user gives:
 
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 
 # From a URL like: https://app.asana.com/0/1234567890123/list
 PROJECT_ID=$(extract_project_id "PASTE_URL_HERE")
@@ -72,7 +73,7 @@ Or manually: the project ID is the number after `/0/` in the URL.
 Load the project, all sections, and all tasks in one sweep:
 
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 
 PROJECT_ID="YOUR_PROJECT_ID"
 
@@ -96,7 +97,7 @@ asana_get "/projects/$PROJECT_ID/tasks" \
   | python3 -m json.tool
 ```
 
-**After fetching:** Summarize to Patrick:
+**After fetching:** Summarize to the user:
 - Project name
 - Total tasks / open tasks / completed
 - Number of sections (and their names)
@@ -108,7 +109,7 @@ asana_get "/projects/$PROJECT_ID/tasks" \
 
 ## Step 3 — Understand Requirements
 
-If Patrick hasn't specified requirements, ask ONE question:
+If the user hasn't specified requirements, ask ONE question:
 
 > "Got it — I can see [X] open tasks across [Y] sections. To organize this right:
 > **Who's the audience?** (e.g. your direct boss, exec team, cross-functional leads)
@@ -161,7 +162,7 @@ For each task, output the rewrite before applying it. Show a before/after previe
 For each task you've rewritten, update it in Asana:
 
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 
 TASK_ID="TASK_GID_HERE"
 NEW_NAME="Deploy backend services to production"
@@ -181,7 +182,7 @@ Loop through all rewrites. Confirm each one succeeds before moving on.
 
 ## Step 6 — Propose New Section Structure
 
-Based on Patrick's requirements, design a clean section structure. Then show it:
+Based on the user's requirements, design a clean section structure. Then show it:
 
 ```
 Proposed Section Structure for "[Project Name]":
@@ -197,7 +198,7 @@ Adjust section names based on requirements. Always put:
 - Urgent/blocked items FIRST
 - Completed items LAST
 
-Present this plan to Patrick before applying.
+Present this plan to the user before applying.
 
 ---
 
@@ -206,7 +207,7 @@ Present this plan to Patrick before applying.
 Create each proposed section in Asana:
 
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 
 PROJECT_ID="YOUR_PROJECT_ID"
 SECTION_NAME="In Progress"
@@ -227,7 +228,7 @@ echo "Section GID: $SECTION_GID"
 Move each task to its assigned section:
 
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 
 SECTION_GID="SECTION_GID_HERE"
 TASK_GID="TASK_GID_HERE"
@@ -265,7 +266,7 @@ Open Asana: https://app.asana.com/0/[PROJECT_ID]/list
 
 ### Get a single task
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 asana_get "/tasks/TASK_ID" \
   --data-urlencode "opt_fields=name,notes,assignee.name,due_on,completed,memberships.section.name" \
   | python3 -m json.tool
@@ -273,38 +274,38 @@ asana_get "/tasks/TASK_ID" \
 
 ### Add a tag to a task
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 asana_post "/tasks/TASK_ID/addTag" '{"data": {"tag": "TAG_GID"}}'
 ```
 
 ### Set task due date
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 asana_put "/tasks/TASK_ID" '{"data": {"due_on": "2026-04-30"}}' | python3 -m json.tool
 ```
 
 ### Set task assignee
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 asana_put "/tasks/TASK_ID" '{"data": {"assignee": "USER_GID"}}' | python3 -m json.tool
 ```
 
 ### List workspace members (to find assignee GIDs)
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 asana_get "/users" --data-urlencode "workspace=WORKSPACE_GID" \
   --data-urlencode "opt_fields=name,email" | python3 -m json.tool
 ```
 
 ### Get all workspaces
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 asana_get "/workspaces" | python3 -m json.tool
 ```
 
 ### Delete a section (use Deletion Synthesizer first!)
 ```bash
-source ~/.claude/skills/asana-organizer/scripts/asana-api.sh
+source ./scripts/asana-api.sh
 asana_delete "/sections/SECTION_GID"
 ```
 
@@ -341,10 +342,105 @@ Use these patterns as a starting point:
 - Always source `asana-api.sh` at the start of every bash block
 - Never delete tasks — only move, rename, or update
 - If a section already exists with the same name, don't create a duplicate
-- Always show before/after for rewrites — Patrick should see what changed
+- Always show before/after for rewrites — the user should see what changed
 - Apply rewrites one batch at a time, confirm success before continuing
 - If an API call fails (non-200), log the error and continue with remaining tasks
 - Never expose the PAT in output shown to stakeholders
+
+---
+
+## Connectors (Multi-Tool)
+
+The skill supports **Asana, ClickUp, Monday, Trello, Notion, and Jira** through a unified bash connector layer.
+
+### Setup per tool
+
+Set the appropriate env var, then source the connectors:
+
+```bash
+# Asana
+export ASANA_PAT='2/your-token-here'
+source ./scripts/connectors.sh
+connect_asana_ping
+
+# ClickUp
+export CLICKUP_API_TOKEN='pk_...'
+source ./scripts/connectors.sh
+connect_clickup_ping
+
+# Monday
+export MONDAY_API_TOKEN='ey...'
+source ./scripts/connectors.sh
+connect_monday_ping
+
+# Trello
+export TRELLO_API_KEY='...'
+export TRELLO_API_TOKEN='...'
+source ./scripts/connectors.sh
+connect_trello_ping
+
+# Notion
+export NOTION_API_KEY='secret_...'
+source ./scripts/connectors.sh
+connect_notion_ping
+
+# Jira
+export JIRA_BASE_URL='https://yourcompany.atlassian.net'
+export JIRA_EMAIL='you@yourcompany.com'
+export JIRA_API_TOKEN='...'
+source ./scripts/connectors.sh
+connect_jira_ping
+```
+
+### Auto-detect from URL
+
+The skill auto-detects the tool from the project URL pattern. Just say:
+
+> "Organize my project at https://app.asana.com/0/123/list"
+> "Clean up my ClickUp board at https://app.clickup.com/123"
+> "Tidy my Monday project at https://yourteam.monday.com/boards/123"
+
+`detect_tool_from_url "URL"` returns the tool name, then the skill uses the matching `connect_<tool>_fetch_project` and `connect_<tool>_apply_changes` functions.
+
+### Normalized interface
+
+All tools return the same JSON shape:
+
+```json
+{
+  "tool": "asana",
+  "project_id": "1234567890",
+  "project_name": "Q2 Product Roadmap",
+  "sections": [{"id": "sec_1", "name": "In Progress"}],
+  "tasks": [
+    {
+      "id": "task_1",
+      "name": "Old task name",
+      "notes": "Old description",
+      "section_id": "sec_1",
+      "assignee": "user@example.com",
+      "due_date": "2026-04-30",
+      "completed": false
+    }
+  ]
+}
+```
+
+This means the rewrite logic (Steps 4-9) works identically regardless of source tool.
+
+---
+
+## MCP Server
+
+A stdio MCP server is included at `./mcp/server.py`. It exposes the same multi-tool operations as standard MCP tools. See [mcp/README.md](mcp/README.md) for setup with Claude Desktop, Cursor, and VS Code.
+
+Quick test:
+```bash
+bash ./scripts/setup.sh        # verify everything works
+python3 ./mcp/server.py < /dev/null  # boot test
+```
+
+Available MCP tools: `fetch_project`, `apply_rewrites`, `create_sections`, `move_tasks`, `get_health`.
 
 ---
 
