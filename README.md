@@ -12,7 +12,7 @@ Tired of project boards that are impossible to read at a glance? This skill take
 - Applies all changes back to the source tool — no copy-paste needed
 - Preserves due dates, assignees, and custom fields
 - **Multi-tool**: works with Asana, ClickUp, Monday.com, Trello, Notion, and Jira
-- **MCP server**: drop-in Model Context Protocol server for Claude Desktop, Cursor, VS Code
+- **MCP server**: drop-in Model Context Protocol server for Any AI Agent / Desktop Assistant, Cursor, VS Code
 
 ## Quick Start
 
