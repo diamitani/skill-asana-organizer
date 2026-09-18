@@ -1,14 +1,7 @@
 ---
 name: asana-organizer
-description: Asana project organizer. Give it any Asana project URL and requirements (audience, format, section structure) and it fetches all tasks, rewrites them for clear stakeholder communication, proposes a reorganized structure, and applies all changes back to Asana. Use when the user says: organize my Asana, clean up this project, rewrite tasks for leadership, sort through my tasks, group by status/team/priority.
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - WebFetch
-  - WebSearch
-  - AskUserQuestion
+description: >
+  Asana project organizer. Give it any Asana project URL and requirements (audience, format, section structure) and it fetches all tasks, rewrites them for clear stakeholder communication, proposes a reorganized structure, and applies all changes back to Asana. Use when the user says: organize my Asana, clean up this project, rewrite tasks for leadership, sort through my tasks, group by status/team/priority. allowed-tools: - Bash - Read - Write - Edit - WebFetch - WebSearch - AskUserQuestion
 ---
 
 # Asana Project Organizer Agent
@@ -396,7 +389,7 @@ bash scripts/setup.sh --check
 
 ### MCP server (stdio JSON-RPC)
 
-`./mcp/server.py` is a real MCP server you can add to Claude Desktop,
+`./mcp/server.py` is a real MCP server you can add to Any AI Agent / Desktop Assistant,
 Cursor, or VS Code Continue. It exposes:
 
 - `fetch_project(tool, project_url_or_id)` → normalized JSON
@@ -405,7 +398,7 @@ Cursor, or VS Code Continue. It exposes:
 - `move_tasks(tool, moves)` → move tasks to new sections
 - `get_health()` → server health + which tools have credentials
 
-Wire-up examples for Claude Desktop, Cursor, and VS Code Continue are in
+Wire-up examples for Any AI Agent / Desktop Assistant, Cursor, and VS Code Continue are in
 [`./mcp/README.md`](./mcp/README.md). The server uses the official
 `mcp` Python SDK when available and falls back to a manual JSON-RPC loop
 on Python 3.9, so it works on any modern Python install.
