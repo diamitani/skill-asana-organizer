@@ -1,8 +1,15 @@
 ---
 name: asana-organizer
-description: >
-  Asana project organizer. Give it any Asana project URL and requirements (audience, format, section structure) and it fetches all tasks, rewrites them for clear stakeholder communication, proposes a reorganized structure, and applies all changes back to Asana. Use when the user says: organize my Asana, clean up this project, rewrite tasks for leadership, sort through my tasks, group by status/team/priority. allowed-tools: - Bash - Read - Write - Edit - WebFetch - WebSearch - AskUserQuestion
+description: Fetch any project board (Asana, ClickUp, Monday, Trello, Notion, or Jira) from a URL, rewrite every task name and description for stakeholder clarity, propose a clean section structure, and apply all changes through the tool's API with preview-before-commit. Use when the user says: organize my Asana, clean up this project, rewrite tasks for leadership, sort through my tasks, group by status/team/priority.
+license: MIT
+compatibility: bash 4.0+, python 3.8+, curl, jq. One tool API token (Asana PAT, ClickUp, Monday, Trello, Notion, or Jira). Optional MCP-compatible client (Claude Desktop, Cursor, VS Code) for mcp/server.py.
+metadata:
+  author: diamitani
+  version: "1.0.0"
+  repository: https://github.com/diamitani/skill-asana-organizer
+allowed-tools: Bash Read Write Edit WebFetch WebSearch AskUserQuestion
 ---
+
 
 # Asana Project Organizer Agent
 

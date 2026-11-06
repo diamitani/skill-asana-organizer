@@ -1,0 +1,16 @@
+{
+  "_comment": "Entry to ADD to .grok-plugin/marketplace.json in a fork of github.com/xai-org/plugin-marketplace. Regenerate .grok-plugin/plugin-index.json with scripts/generate-plugin-index.py after adding. Pin the real 40-char HEAD sha from: git ls-remote https://github.com/diamitani/skill-asana-organizer.git HEAD",
+  "name": "asana-organizer",
+  "description": "Fetch any project board (Asana, ClickUp, Monday, Trello, Notion, Jira), rewrite tasks for stakeholder clarity, and apply a clean section structure with preview-before-commit.",
+  "homepage": "https://diamitani.github.io/asana-organizer-site/",
+  "source": {
+    "type": "remote",
+    "url": "https://github.com/diamitani/skill-asana-organizer",
+    "sha": "PIN_FULL_40_CHAR_HEAD_SHA"
+  },
+  "keywords": ["asana-organizer", "project-board-cleanup"],
+  "category": "productivity",
+  "author": "Patrick Diamitani",
+  "version": "1.0.0",
+  "license": "MIT"
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.diamitani/asana-organizer",
+  "description": "Fetch any project board (Asana, ClickUp, Monday, Trello, Notion, Jira), rewrite tasks for stakeholder clarity, and apply a clean section structure. Tools: fetch_project, apply_rewrites, create_sections, move_tasks.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/diamitani/skill-asana-organizer",
+    "source": "github"
+  },
+  "_comment": "DRAFT - packages[] entry required before publish: the registry hosts metadata only, so mcp/server.py must ship as a PyPI (or npm) package first. See PUBLISH.md."
+}

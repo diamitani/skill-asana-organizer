@@ -1,0 +1,13 @@
+{
+  "name": "asana-organizer",
+  "version": "1.0.0",
+  "description": "Fetch any project board (Asana, ClickUp, Monday, Trello, Notion, Jira) from a URL, rewrite tasks for stakeholder clarity, propose a clean section structure, and apply changes with preview-before-commit.",
+  "author": {
+    "name": "Patrick Diamitani",
+    "url": "https://diamitani.github.io/asana-organizer-site/"
+  },
+  "homepage": "https://diamitani.github.io/asana-organizer-site/",
+  "repository": "https://github.com/diamitani/skill-asana-organizer",
+  "license": "MIT",
+  "keywords": ["asana", "project-management", "clickup", "monday", "trello", "notion", "jira", "task-rewrite", "stakeholder-updates"]
+}

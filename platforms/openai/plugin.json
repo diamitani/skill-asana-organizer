@@ -1,0 +1,36 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "asana-organizer",
+  "version": "1.0.0",
+  "description": "Fetch any project board (Asana, ClickUp, Monday, Trello, Notion, or Jira) from a URL, rewrite every task for stakeholder clarity, propose a clean section structure, and apply all changes with preview-before-commit.",
+  "author": {
+    "name": "Patrick Diamitani",
+    "url": "https://diamitani.github.io/asana-organizer-site/"
+  },
+  "homepage": "https://diamitani.github.io/asana-organizer-site/",
+  "repository": "https://github.com/diamitani/skill-asana-organizer",
+  "license": "MIT",
+  "keywords": ["asana", "project-management", "clickup", "monday", "trello", "notion", "jira", "task-rewrite"],
+  "skills": "./skills/",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Asana Project Organizer",
+        "shortDescription": "Tidy any project board in 30 seconds",
+        "longDescription": "Fetch any project board (Asana, ClickUp, Monday, Trello, Notion, or Jira) from a URL, rewrite every task name and description for stakeholder clarity, propose a clean section structure, and apply all changes with a preview before anything goes live. Never deletes tasks.",
+        "developerName": "Patrick Diamitani",
+        "category": "Productivity",
+        "capabilities": ["Rewrite project tasks", "Reorganize project sections", "Preview changes before applying"],
+        "websiteURL": "https://diamitani.github.io/asana-organizer-site/",
+        "supportURL": "https://github.com/diamitani/skill-asana-organizer/issues",
+        "privacyPolicyURL": "PRIVACY_POLICY_URL_NEEDED",
+        "termsOfServiceURL": "TERMS_URL_NEEDED",
+        "defaultPrompt": [
+          "Organize my Asana project at https://app.asana.com/0/123/list for leadership",
+          "Rewrite the tasks on this Trello board for my boss",
+          "Group my ClickUp project by team and clean up the task names"
+        ]
+      }
+    }
+  }
+}
